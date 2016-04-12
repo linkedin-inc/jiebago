@@ -61,6 +61,14 @@ func (d *Dictionary) Frequency(key string) (float64, bool) {
 	return freq, ok
 }
 
+// Pos returns the pos and existence of give word
+func (d *Dictionary) Pos(key string) (string, bool) {
+	d.RLock()
+	pos, ok := d.posMap[key]
+	d.RUnlock()
+	return pos, ok
+}
+
 func (d *Dictionary) loadDictionary(fileName string) error {
 	return dictionary.LoadDictionary(d, fileName)
 }

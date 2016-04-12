@@ -370,7 +370,7 @@ func (seg *Segmenter) Tag(sentence string, hmm bool) <-chan string {
 			}
 			if reHanDefault.MatchString(block) {
 				for x := range cut(block) {
-					if val, ok := seg.dict.posMap[x]; ok {
+					if val, ok := seg.dict.Pos(x); ok {
 						result <- x + "/" + val
 					} else {
 						result <- x
@@ -384,7 +384,7 @@ func (seg *Segmenter) Tag(sentence string, hmm bool) <-chan string {
 					continue
 				}
 				for _, r := range subBlock {
-					if val, ok := seg.dict.posMap[string(r)]; ok {
+					if val, ok := seg.dict.Pos(string(r)); ok {
 						result <- string(r) + "/" + val
 					} else {
 						result <- string(r)
@@ -411,7 +411,7 @@ func (seg *Segmenter) TagAll(sentence string) <-chan string {
 		for k := range ks {
 			l = dag[k]
 			if len(l) == 1 && k > start {
-				if val, ok := seg.dict.posMap[string(runes[k:l[0]+1])]; ok {
+				if val, ok := seg.dict.Pos(string(runes[k : l[0]+1])); ok {
 					result <- string(runes[k:l[0]+1]) + "/" + val
 				} else {
 					result <- string(runes[k : l[0]+1])
@@ -421,10 +421,10 @@ func (seg *Segmenter) TagAll(sentence string) <-chan string {
 			}
 			for _, j := range l {
 				if j > k {
-					if val, ok := seg.dict.posMap[string(runes[k:j+1])]; ok {
-						result <- string(string(runes[k:j+1])) + "/" + val
+					if val, ok := seg.dict.Pos(string(runes[k : j+1])); ok {
+						result <- string(runes[k:j+1]) + "/" + val
 					} else {
-						result <- string(string(runes[k : j+1]))
+						result <- string(runes[k : j+1])
 					}
 					start = j
 				}
