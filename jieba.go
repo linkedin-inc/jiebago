@@ -94,7 +94,10 @@ func (seg *Segmenter) SuggestFrequency(words ...string) float64 {
 // LoadDictionary loads dictionary from given file name. Everytime
 // LoadDictionary is called, previously loaded dictionary will be cleard.
 func (seg *Segmenter) LoadDictionary(fileName string) error {
-	seg.dict = &Dictionary{freqMap: make(map[string]float64)}
+	seg.dict = &Dictionary{
+		freqMap: make(map[string]float64),
+		posMap:  make(map[string]string),
+	}
 	return seg.dict.loadDictionary(fileName)
 }
 
@@ -344,6 +347,49 @@ func (seg *Segmenter) CutAll(sentence string) <-chan string {
 			}
 			for _, subBlock := range reSkipCutAll.Split(block, -1) {
 				result <- subBlock
+			}
+		}
+		close(result)
+	}()
+	return result
+}
+
+func (seg *Segmenter) Tag(sentence string, hmm bool) <-chan string {
+	result := make(chan string)
+	var cut cutFunc
+	if hmm {
+		cut = seg.cutDAG
+	} else {
+		cut = seg.cutDAGNoHMM
+	}
+
+	go func() {
+		for _, block := range util.RegexpSplit(reHanDefault, sentence, -1) {
+			if len(block) == 0 {
+				continue
+			}
+			if reHanDefault.MatchString(block) {
+				for x := range cut(block) {
+					if val, ok := seg.dict.posMap[x]; ok {
+						result <- x + "/" + val
+					} else {
+						result <- x
+					}
+				}
+				continue
+			}
+			for _, subBlock := range util.RegexpSplit(reSkipDefault, block, -1) {
+				if reSkipDefault.MatchString(subBlock) {
+					result <- subBlock
+					continue
+				}
+				for _, r := range subBlock {
+					if val, ok := seg.dict.posMap[string(r)]; ok {
+						result <- string(r) + "/" + val
+					} else {
+						result <- string(r)
+					}
+				}
 			}
 		}
 		close(result)

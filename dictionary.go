@@ -11,6 +11,7 @@ import (
 type Dictionary struct {
 	total, logTotal float64
 	freqMap         map[string]float64
+	posMap          map[string]string
 	sync.RWMutex
 }
 
@@ -34,6 +35,9 @@ func (d *Dictionary) AddToken(token dictionary.Token) {
 
 func (d *Dictionary) addToken(token dictionary.Token) {
 	d.freqMap[token.Text()] = token.Frequency()
+	if len(token.Pos()) > 0 {
+		d.posMap[token.Text()] = token.Pos()
+	}
 	d.total += token.Frequency()
 	runes := []rune(token.Text())
 	n := len(runes)
