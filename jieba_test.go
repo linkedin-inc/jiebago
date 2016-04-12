@@ -678,7 +678,16 @@ func TestCutAll(t *testing.T) {
 }
 
 func TestTag(t *testing.T) {
-	result := chanToArray(seg.Tag("领英是个好公司,霸气侧漏的赤兔棒棒的,我有天才杯子ok啦", true))
+	result := chanToArray(seg.Tag("领英中国是个好公司,霸气侧漏的赤兔棒棒的,我有天才杯子ok啦", true))
+	t.Log(seg.dict.posMap["霸气侧漏的赤兔"])
+	t.Log(seg.dict.freqMap["霸气侧漏的赤兔"])
+	for _, r := range result {
+		t.Log(r)
+	}
+}
+
+func TestTagAll(t *testing.T) {
+	result := chanToArray(seg.TagAll("领英中国是个好公司,霸气侧漏的赤兔棒棒的,我有天才杯子ok啦"))
 	t.Log(seg.dict.posMap["霸气侧漏的赤兔"])
 	t.Log(seg.dict.freqMap["霸气侧漏的赤兔"])
 	for _, r := range result {

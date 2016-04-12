@@ -397,6 +397,44 @@ func (seg *Segmenter) Tag(sentence string, hmm bool) <-chan string {
 	return result
 }
 
+func (seg *Segmenter) TagAll(sentence string) <-chan string {
+	result := make(chan string)
+	go func() {
+		runes := []rune(sentence)
+		dag := seg.dag(runes)
+		start := -1
+		ks := make([]int, len(dag))
+		for k := range dag {
+			ks[k] = k
+		}
+		var l []int
+		for k := range ks {
+			l = dag[k]
+			if len(l) == 1 && k > start {
+				if val, ok := seg.dict.posMap[string(runes[k:l[0]+1])]; ok {
+					result <- string(runes[k:l[0]+1]) + "/" + val
+				} else {
+					result <- string(runes[k : l[0]+1])
+				}
+				start = l[0]
+				continue
+			}
+			for _, j := range l {
+				if j > k {
+					if val, ok := seg.dict.posMap[string(runes[k:j+1])]; ok {
+						result <- string(string(runes[k:j+1])) + "/" + val
+					} else {
+						result <- string(string(runes[k : j+1]))
+					}
+					start = j
+				}
+			}
+		}
+		close(result)
+	}()
+	return result
+}
+
 // CutForSearch cuts sentence into words using search engine mode.
 // Search engine mode, based on the accurate mode, attempts to cut long words
 // into several short words, which can raise the recall rate.
