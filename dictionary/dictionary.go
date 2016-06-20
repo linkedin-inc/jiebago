@@ -4,10 +4,13 @@ package dictionary
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/go-errors/errors"
 )
 
 // DictLoader is the interface that could add one token or load
@@ -21,8 +24,10 @@ func loadDictionary(file *os.File) (<-chan Token, <-chan error) {
 	tokenCh, errCh := make(chan Token), make(chan error)
 
 	go func() {
-		defer close(tokenCh)
-		defer close(errCh)
+		defer func() {
+			close(tokenCh)
+			close(errCh)
+		}()
 		scanner := bufio.NewScanner(file)
 		var token Token
 		var line string
@@ -35,6 +40,7 @@ func loadDictionary(file *os.File) (<-chan Token, <-chan error) {
 			if length := len(fields); length > 1 {
 				token.frequency, err = strconv.ParseFloat(fields[1], 64)
 				if err != nil {
+					fmt.Fprintf(os.Stderr, "LoadDictionary err:%v, bad dict line:%s\n", err, line)
 					errCh <- err
 					return
 				}
@@ -64,10 +70,19 @@ func LoadDictionary(dl DictLoader, fileName string) error {
 		return err
 	}
 	defer dictFile.Close()
-	tokenCh, errCh := loadDictionary(dictFile)
+	tokenCh, tokenErrorCh := loadDictionary(dictFile)
+	dictErrorCh := make(chan error, 1)
+	go func(ch <-chan error) {
+		for e := range ch {
+			fmt.Fprintf(os.Stderr, "LoadDictionary err:%v\n", e)
+			dictErrorCh <- errors.New("dict load failed")
+			break
+		}
+		close(dictErrorCh)
+	}(tokenErrorCh)
 	dl.Load(tokenCh)
-
-	return <-errCh
+	err = <-dictErrorCh
+	return err
 
 }
 
