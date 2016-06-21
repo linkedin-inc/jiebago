@@ -695,6 +695,43 @@ func TestTagAll(t *testing.T) {
 	}
 }
 
+func TestAddWordWithPos(t *testing.T) {
+	w := "领英"
+	result := chanToArray(seg.TagAll(w))
+	for _, r := range result {
+		t.Log(r)
+		p, _ := seg.Pos(w)
+		f, _ := seg.Frequency(w)
+		t.Log(p)
+		t.Log(f)
+	}
+	seg.AddWordWithPos(w, 1000, "DDDDD")
+	result = chanToArray(seg.TagAll(w))
+	for _, r := range result {
+		t.Log(r)
+		p, _ := seg.Pos(w)
+		f, _ := seg.Frequency(w)
+		t.Log(p)
+		t.Log(f)
+	}
+
+	seg.AddWordWithPos(w, 1, "XX")
+	result = chanToArray(seg.TagAll(w))
+	for _, r := range result {
+		t.Log(r)
+		p, _ := seg.Pos(w)
+		f, _ := seg.Frequency(w)
+		t.Log(p)
+		t.Log(f)
+	}
+
+	seg.DeleteWord(w)
+	result = chanToArray(seg.TagAll(w))
+	for _, r := range result {
+		t.Log(r)
+	}
+}
+
 func TestDefaultCutNoHMM(t *testing.T) {
 	var result []string
 	for index, content := range testContents {

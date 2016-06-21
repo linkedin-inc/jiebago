@@ -29,9 +29,19 @@ func (seg *Segmenter) Frequency(word string) (float64, bool) {
 	return seg.dict.Frequency(word)
 }
 
+// return the POS of word
+func (seg *Segmenter) Pos(word string) (string, bool) {
+	return seg.dict.Pos(word)
+}
+
 // AddWord adds a new word with frequency to dictionary
 func (seg *Segmenter) AddWord(word string, frequency float64) {
 	seg.dict.AddToken(dictionary.NewToken(word, frequency, ""))
+}
+
+// add a word with freq and pos
+func (seg *Segmenter) AddWordWithPos(word string, frequency float64, pos string) {
+	seg.dict.AddToken(dictionary.NewToken(word, frequency, pos))
 }
 
 // DeleteWord removes a word from dictionary
