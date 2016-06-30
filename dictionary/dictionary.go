@@ -4,13 +4,12 @@ package dictionary
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/go-errors/errors"
 )
 
 // DictLoader is the interface that could add one token or load
